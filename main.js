@@ -8,7 +8,6 @@ let videos = [
     { id: 6, price: 25, link: 'https://www.youtube.com/watch?v=77JEwFTaU2I&ab_channel=BarbascuraeXtra' }
 ];
 
-
 // Funzione per estrarre l'ID del video da un link di YouTube
 function getYouTubeVideoId(link) {
     let url = new URL(link);
@@ -16,6 +15,13 @@ function getYouTubeVideoId(link) {
     return searchParams.get('v');
 }
 
+// Funzione per verificare se un link è valido di YouTube
+function isValidYouTubeLink(link) {
+    // Pattern per corrispondere a un link di YouTube
+    const youtubePattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/watch\?v=([A-Za-z0-9_-]+)/;
+    
+    return youtubePattern.test(link);
+}
 
 // Dopo aver creato il grid dei video
 let videoGrid = document.getElementById('video-grid');
@@ -90,20 +96,32 @@ priceFilterButtons.forEach(button => {
 
 // costruzione del nuovo video caricato + push nell'oggetto "videos"
 let addVideoButton = document.getElementById('add-video');
+let invalidLinkAlert = document.getElementById('invalid-link-alert');
 addVideoButton.addEventListener('click', function () {
     let videoLinkInput = document.getElementById('video-link');
     let videoPriceSelect = document.getElementById('video-price');
     let videoLink = videoLinkInput.value;
     let videoPrice = parseFloat(videoPriceSelect.value);
-    let newVideoId = videos.length + 1;
-    let newVideo = { id: newVideoId, price: videoPrice, link: videoLink };
-    videos.push(newVideo);
 
-    //al push reset dei campi e dei filtri
-    filterVideos('all');
-    videoLinkInput.value = '';
-    videoPriceSelect.selectedIndex = 0;
+    // Verifica se il link è un link di YouTube
+    if (isValidYouTubeLink(videoLink)) {
+        invalidLinkAlert.style.display = 'none'; // Nasconde l'alert
+        let newVideoId = videos.length + 1;
+        let newVideo = { id: newVideoId, price: videoPrice, link: videoLink };
+        videos.push(newVideo);
+
+        // Resetta i campi e i filtri
+        filterVideos('all');
+        videoLinkInput.value = '';
+        videoPriceSelect.selectedIndex = 0;
+    } else {
+        // se il link non è valido, mostra l'alert
+        invalidLinkAlert.style.display = 'block';
+        setTimeout(function () {
+            invalidLinkAlert.style.display = 'none';
+        }, 5000); // Nasconde l'alert dopo 5 secondi
+    }
 });
 
-// Filtraggio di tutti i video all'apertura dell'html sul browser
+// per visualizzare tutti i video all'apertura della pagina sul browser
 filterVideos('all');
